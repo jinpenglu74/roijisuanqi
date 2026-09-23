@@ -1,13 +1,19 @@
-name: Build ROI Calculator Installer
+name: Build ROI Calculator Portable
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+      - 'README.md'
   push:
     tags:
       - 'v*'
 
 jobs:
-  build-windows-release:
+  build-windows-portable:
     runs-on: windows-latest
 
     steps:
@@ -19,60 +25,27 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Python tools
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Verify PySide6
+      - name: Verify environment
         run: |
           python -c "import PySide6; print('PySide6 OK')"
 
-      - name: Build Portable EXE
+      - name: Build portable application
         run: |
           pyinstaller --noconfirm --onedir --windowed --collect-all PySide6 --name "ROI智能计算器" main.py
 
-      - name: Prepare Portable Package
-        shell: cmd
-        run: |
-          mkdir portable\ROI智能计算器_V1.2.1
-          xcopy dist\ROI智能计算器 portable\ROI智能计算器_V1.2.1 /E /I
-          copy README.md portable\ROI智能计算器_V1.2.1\
-
-      - name: Build Single EXE
-        run: |
-          pyinstaller --noconfirm --onefile --windowed --collect-all PySide6 --name "ROI智能计算器" main.py
-
-      - name: Install Inno Setup
+      - name: Package portable zip
         shell: powershell
         run: |
-          choco install innosetup -y
+          Compress-Archive -Path dist\ROI智能计算器 -DestinationPath ROI智能计算器_Portable.zip
 
-      - name: Build Setup Installer
-        shell: cmd
-        run: |
-          iscc installer\ROI计算器安装脚本.iss
-
-      - name: Create Portable Zip
-        shell: powershell
-        run: |
-          Compress-Archive -Path portable\ROI智能计算器_V1.2.1 -DestinationPath ROI智能计算器_Portable_V1.2.1.zip
-
-      - name: Check Output
-        shell: cmd
-        run: |
-          dir installer\Output
-          dir ROI智能计算器_Portable_V1.2.1.zip
-
-      - name: Upload Installer
+      - name: Upload portable package
         uses: actions/upload-artifact@v4
         with:
-          name: ROI智能计算器_Setup_V1.2.1
-          path: installer\Output\ROI智能计算器_Setup_V1.2.1.exe
-
-      - name: Upload Portable
-        uses: actions/upload-artifact@v4
-        with:
-          name: ROI智能计算器_Portable_V1.2.1
-          path: ROI智能计算器_Portable_V1.2.1.zip
+          name: ROI智能计算器_Portable
+          path: ROI智能计算器_Portable.zip
