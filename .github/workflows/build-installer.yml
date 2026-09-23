@@ -7,7 +7,7 @@ on:
       - 'v*'
 
 jobs:
-  build-windows-installer:
+  build-windows-release:
     runs-on: windows-latest
 
     steps:
@@ -29,16 +29,20 @@ jobs:
         run: |
           python -c "import PySide6; print('PySide6 OK')"
 
-      - name: Build EXE
+      - name: Build Portable EXE
         run: |
-          pyinstaller --noconfirm --onefile --windowed --collect-all PySide6 --name "ROI智能计算器" main.py
+          pyinstaller --noconfirm --onedir --windowed --collect-all PySide6 --name "ROI智能计算器" main.py
 
-      - name: Prepare release files
+      - name: Prepare Portable Package
         shell: cmd
         run: |
-          mkdir release
-          copy dist\ROI智能计算器.exe release\
-          copy README.md release\
+          mkdir portable\ROI智能计算器_V1.2.1
+          xcopy dist\ROI智能计算器 portable\ROI智能计算器_V1.2.1 /E /I
+          copy README.md portable\ROI智能计算器_V1.2.1\
+
+      - name: Build Single EXE
+        run: |
+          pyinstaller --noconfirm --onefile --windowed --collect-all PySide6 --name "ROI智能计算器" main.py
 
       - name: Install Inno Setup
         shell: powershell
@@ -50,14 +54,25 @@ jobs:
         run: |
           iscc installer\ROI计算器安装脚本.iss
 
-      - name: Check installer output
+      - name: Create Portable Zip
+        shell: powershell
+        run: |
+          Compress-Archive -Path portable\ROI智能计算器_V1.2.1 -DestinationPath ROI智能计算器_Portable_V1.2.1.zip
+
+      - name: Check Output
         shell: cmd
         run: |
-          dir installer
           dir installer\Output
+          dir ROI智能计算器_Portable_V1.2.1.zip
 
-      - name: Upload Setup EXE
+      - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
-          name: ROI智能计算器_Setup_V1.2.0
-          path: installer\Output\ROI智能计算器_Setup_V1.2.0.exe
+          name: ROI智能计算器_Setup_V1.2.1
+          path: installer\Output\ROI智能计算器_Setup_V1.2.1.exe
+
+      - name: Upload Portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ROI智能计算器_Portable_V1.2.1
+          path: ROI智能计算器_Portable_V1.2.1.zip
