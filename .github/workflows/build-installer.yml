@@ -45,8 +45,14 @@ jobs:
         run: |
           iscc installer\ROI计算器安装脚本.iss
 
+      - name: Check installer output
+        shell: cmd
+        run: |
+          dir installer
+          dir installer\Output
+
       - name: Upload Setup EXE
         uses: actions/upload-artifact@v4
         with:
           name: ROI智能计算器_Setup_V1.1.0
-          path: installer\ROI智能计算器_Setup_V1.1.0.exe
+          path: installer\Output\ROI智能计算器_Setup_V1.1.0.exe
