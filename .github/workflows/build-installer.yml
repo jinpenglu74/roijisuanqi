@@ -50,15 +50,25 @@ jobs:
       - name: Package portable zip
         shell: powershell
         run: |
-          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'ROI智能计算器_Portable.zip'
+          Write-Host "Workspace: $env:GITHUB_WORKSPACE"
+          Write-Host "Dist content:"
+          Get-ChildItem -Path "$env:GITHUB_WORKSPACE\dist" -Recurse
+
+          $zipPath = "$env:GITHUB_WORKSPACE\ROI智能计算器_Portable.zip"
           if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+
           Compress-Archive -Path "$env:GITHUB_WORKSPACE\dist\*" -DestinationPath $zipPath -Force
-          if (!(Test-Path $zipPath)) { throw 'Portable zip not created' }
+
+          if (!(Test-Path $zipPath)) {
+              throw "Portable zip not created: $zipPath"
+          }
+
+          Write-Host "Portable zip created successfully"
           Get-Item $zipPath
-          Write-Host "Portable zip created: $zipPath"
 
       - name: Upload portable package
         uses: actions/upload-artifact@v4
         with:
           name: ROI智能计算器_Portable
-          path: ${{ github.workspace }}/ROI智能计算器_Portable.zip
+          path: ROI智能计算器_Portable.zip
+          if-no-files-found: error
