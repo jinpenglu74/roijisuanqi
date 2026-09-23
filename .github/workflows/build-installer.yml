@@ -44,13 +44,15 @@ jobs:
       - name: Verify portable output
         shell: powershell
         run: |
-          if (!(Test-Path "dist\ROI智能计算器\ROI智能计算器.exe")) { exit 1 }
-          Write-Host "Portable EXE found"
+          Get-ChildItem -Path dist -Recurse
+          $exe = Get-ChildItem -Path dist -Filter *.exe -Recurse | Select-Object -First 1
+          if ($null -eq $exe) { throw 'Portable EXE not found' }
+          Write-Host "Portable EXE found: $($exe.FullName)"
 
       - name: Package portable zip
         shell: powershell
         run: |
-          Compress-Archive -Path dist\ROI智能计算器 -DestinationPath ROI智能计算器_Portable.zip
+          Compress-Archive -Path dist\* -DestinationPath ROI智能计算器_Portable.zip
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
