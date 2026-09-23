@@ -1,48 +1,47 @@
-import tkinter as tk
-from tkinter import ttk
+import sys
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFrame
+from PySide6.QtCore import Qt
 
+class ROIWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('ROI智能计算器 V1.2.0')
+        self.resize(1100, 700)
+        self.setStyleSheet('''
+        QWidget{background:#06152f;color:#e8f5ff;font-family:Microsoft YaHei;font-size:14px;}
+        QFrame{background:#0b2145;border:1px solid #168cff;border-radius:16px;}
+        QLineEdit{background:#071a35;border:1px solid #18a8ff;border-radius:8px;padding:8px;color:white;}
+        QPushButton{background:#087cff;border-radius:10px;padding:10px;color:white;font-weight:bold;}
+        QPushButton:hover{background:#12b8ff;}
+        QLabel#title{font-size:28px;color:#2fd7ff;font-weight:bold;}
+        QLabel#roi{font-size:48px;color:#00eaff;font-weight:bold;}
+        ''')
+        self.price=QLineEdit(); self.cost=QLineEdit(); self.ship=QLineEdit(); self.ad=QLineEdit(); self.platform=QLineEdit(); self.refund=QLineEdit()
+        self.result=QLabel('ROI 计算结果')
+        self.result.setObjectName('roi')
+        left=QFrame(); ll=QVBoxLayout(left)
+        ll.addWidget(QLabel('经营参数'))
+        for n,w in [('商品售价',self.price),('商品成本',self.cost),('商品运费',self.ship),('广告花费',self.ad),('平台扣点%',self.platform),('退款率%',self.refund)]:
+            ll.addWidget(QLabel(n)); ll.addWidget(w)
+        btn=QPushButton('开始测算'); btn.clicked.connect(self.calc); ll.addWidget(btn)
+        right=QFrame(); rl=QVBoxLayout(right)
+        rl.addWidget(QLabel('测算结果'))
+        rl.addWidget(self.result)
+        self.info=QLabel('每单广告费 / 平台扣点 / 毛利率')
+        rl.addWidget(self.info)
+        layout=QVBoxLayout(self)
+        title=QLabel('ROI智能计算器'); title.setObjectName('title')
+        layout.addWidget(title)
+        row=QHBoxLayout(); row.addWidget(left); row.addWidget(right); layout.addLayout(row)
+    def calc(self):
+        try:
+            price=float(self.price.text() or 0); ad=float(self.ad.text() or 0)
+            roi=price/ad if ad else 0
+            self.result.setText(f'{roi:.2f}')
+            self.info.setText('达到该ROI可覆盖广告投入并评估盈利空间')
+        except:
+            self.result.setText('请输入数字')
 
-def calculate():
-    try:
-        price=float(price_var.get() or 0)
-        cost=float(cost_var.get() or 0)
-        shipping=float(ship_var.get() or 0)
-        ad=float(ad_var.get() or 0)
-        platform=float(platform_var.get() or 0)/100
-        refund=float(refund_var.get() or 0)/100
-
-        income=price*(1-platform)*(1-refund)
-        profit=income-cost-shipping-ad
-        roi=price/ad if ad else 0
-
-        roi_result.config(text=f"ROI {roi:.2f}")
-        profit_result.config(text=f"利润 ¥{profit:.2f}")
-        state_result.config(text="盈利" if profit>=0 else "亏损")
-    except:
-        state_result.config(text="请输入数字")
-
-root=tk.Tk()
-root.title("ROI智能计算器 V1.0")
-root.geometry("700x450")
-
-price_var=tk.StringVar()
-cost_var=tk.StringVar()
-ship_var=tk.StringVar()
-ad_var=tk.StringVar()
-platform_var=tk.StringVar()
-refund_var=tk.StringVar()
-
-for title,var in [("商品售价",price_var),("商品成本",cost_var),("运费",ship_var),("广告花费",ad_var),("平台扣点%",platform_var),("退款率%",refund_var)]:
-    ttk.Label(root,text=title).pack()
-    ttk.Entry(root,textvariable=var).pack()
-
-ttk.Button(root,text="计算ROI",command=calculate).pack(pady=15)
-
-roi_result=ttk.Label(root,text="ROI")
-roi_result.pack()
-profit_result=ttk.Label(root,text="利润")
-profit_result.pack()
-state_result=ttk.Label(root,text="等待输入")
-state_result.pack()
-
-root.mainloop()
+app=QApplication(sys.argv)
+w=ROIWindow(); w.show()
+sys.exit(app.exec())
