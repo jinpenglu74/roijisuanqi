@@ -1,10 +1,12 @@
 import sys
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFrame
 from PySide6.QtCore import Qt
+from logger import logger
 
 class ROIWindow(QWidget):
     def __init__(self):
         super().__init__()
+        logger.info("主界面初始化")
         self.setWindowTitle('ROI智能计算器 V1.2.0')
         self.resize(1100, 700)
         self.setStyleSheet('''
@@ -33,15 +35,22 @@ class ROIWindow(QWidget):
         title=QLabel('ROI智能计算器'); title.setObjectName('title')
         layout.addWidget(title)
         row=QHBoxLayout(); row.addWidget(left); row.addWidget(right); layout.addLayout(row)
+
     def calc(self):
         try:
-            price=float(self.price.text() or 0); ad=float(self.ad.text() or 0)
+            logger.info("开始ROI计算")
+            price=float(self.price.text() or 0)
+            ad=float(self.ad.text() or 0)
             roi=price/ad if ad else 0
             self.result.setText(f'{roi:.2f}')
             self.info.setText('达到该ROI可覆盖广告投入并评估盈利空间')
-        except:
+            logger.info("ROI计算完成: %s", roi)
+        except Exception as e:
+            logger.exception("ROI计算异常")
             self.result.setText('请输入数字')
 
 app=QApplication(sys.argv)
-w=ROIWindow(); w.show()
+logger.info("Qt应用启动")
+w=ROIWindow()
+w.show()
 sys.exit(app.exec())
