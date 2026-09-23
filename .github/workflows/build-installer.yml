@@ -5,12 +5,11 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
     paths-ignore:
       - '*.md'
       - 'README.md'
-  push:
-    tags:
-      - 'v*'
 
 jobs:
   build-windows-portable:
@@ -38,6 +37,12 @@ jobs:
       - name: Build portable application
         run: |
           pyinstaller --noconfirm --onedir --windowed --collect-all PySide6 --name "ROI智能计算器" main.py
+
+      - name: Verify portable output
+        shell: powershell
+        run: |
+          if (!(Test-Path "dist\ROI智能计算器\ROI智能计算器.exe")) { exit 1 }
+          Write-Host "Portable EXE found"
 
       - name: Package portable zip
         shell: powershell
