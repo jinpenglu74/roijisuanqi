@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install tools
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
@@ -28,14 +28,14 @@ jobs:
         run: |
           pyinstaller --noconfirm --onefile --windowed --name ROI智能计算器 main.py
 
-      - name: Package installer files
+      - name: Prepare installer
         run: |
           mkdir release
           copy dist\ROI智能计算器.exe release\
           copy README.md release\
 
-      - name: Upload installer artifact
+      - name: Upload Windows package
         uses: actions/upload-artifact@v4
         with:
-          name: ROI智能计算器-Windows版
+          name: ROI智能计算器_Setup_V1.1.0
           path: release
