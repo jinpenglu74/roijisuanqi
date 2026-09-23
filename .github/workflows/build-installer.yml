@@ -52,17 +52,22 @@ jobs:
       - name: Package portable zip
         shell: powershell
         run: |
-          Compress-Archive -Path dist\* -DestinationPath ROI智能计算器_Portable.zip
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'ROI智能计算器_Portable.zip'
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+          Compress-Archive -Path "$env:GITHUB_WORKSPACE\dist\*" -DestinationPath $zipPath -Force
+          if (!(Test-Path $zipPath)) { throw 'Portable zip not created' }
+          Get-Item $zipPath
+          Write-Host "Portable zip created: $zipPath"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: ROI智能计算器_Portable
-          path: ROI智能计算器_Portable.zip
+          path: ${{ github.workspace }}/ROI智能计算器_Portable.zip
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: ROI智能计算器_Portable.zip
+          files: ${{ github.workspace }}/ROI智能计算器_Portable.zip
           generate_release_notes: true
