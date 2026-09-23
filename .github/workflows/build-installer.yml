@@ -11,6 +11,9 @@ on:
       - '*.md'
       - 'README.md'
 
+permissions:
+  contents: write
+
 jobs:
   build-windows-portable:
     runs-on: windows-latest
@@ -49,8 +52,15 @@ jobs:
         run: |
           Compress-Archive -Path dist\ROI智能计算器 -DestinationPath ROI智能计算器_Portable.zip
 
-      - name: Upload portable package
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: ROI智能计算器_Portable
           path: ROI智能计算器_Portable.zip
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ROI智能计算器_Portable.zip
+          generate_release_notes: true
